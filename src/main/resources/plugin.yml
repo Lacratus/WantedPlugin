@@ -1,0 +1,10 @@
+name: WantedPlugin
+version: ${project.version}
+main: be.lacratus.wantedplugin.WantedPlugin
+depend: [WorldEdit, WorldGuard]
+
+commands:
+  Mod:
+    Jail:
+    Unjail:
+  Wanted:
