@@ -47,6 +47,8 @@ public class WantedCommand implements CommandExecutor {
                 for (Map.Entry<UUID, DDGPlayer> entry : main.getWantedPlayers().entrySet()) {
                     list.append("Wantedlist:")
                             .append(entry.getValue().getUsername())
+                            .append(": Wantedlevel ")
+                            .append(entry.getValue().getWantedLevel())
                             .append("\n");
                 }
                 player.sendMessage(String.valueOf(list));
