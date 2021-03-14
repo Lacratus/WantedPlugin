@@ -136,6 +136,9 @@ public final class WantedPlugin extends JavaPlugin {
     public void onDisable() {
         // Plugin shutdown logic
         storedDataHandler.savePlayerData().run();
+
+        // Sluit hikari
+        hikari.close();
     }
 
     public Connection openConnection() {
