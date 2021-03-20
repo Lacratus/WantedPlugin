@@ -25,6 +25,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -152,13 +153,15 @@ public final class WantedPlugin extends JavaPlugin {
 
     public void warn(DDGPlayer ddgPlayer) {
         int x = (int) ddgPlayer.getPlayer().getLocation().getX();
-        int y = (int) ddgPlayer.getPlayer().getLocation().getZ();
-        int z = (int) ddgPlayer.getPlayer().getLocation().getY();
+        int y = (int) ddgPlayer.getPlayer().getLocation().getY();
+        int z = (int) ddgPlayer.getPlayer().getLocation().getZ();
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("WAARSCHUWING!\n" + "WANTED: ").append(ddgPlayer.getPlayer().getDisplayName()).append("\n").append("X: ").append(x)
+
+        stringBuilder.append(ChatColor.translateAlternateColorCodes('&',"&8[&bWanted&8] &4WAARSCHUWING!&f\n"))
+                .append("WANTED: ").append(ddgPlayer.getPlayer().getDisplayName()).append("\n").append("X: ").append(x)
                 .append(" Y: ").append(y).append(" Z: ").append(z);
         for (Player justitie : Bukkit.getOnlinePlayers()) {
-            if(ddgPlayer.getWantedLevel() == 20 && (justitie.hasPermission("wanted.leger") || justitie.hasPermission("wanted.agent"))) {
+            if(ddgPlayer.getWantedLevel() == this.getConfig().getInt("ThirdKill") && (justitie.hasPermission("wanted.leger") || justitie.hasPermission("wanted.agent"))) {
                 justitie.sendMessage(String.valueOf(stringBuilder));
             } else if (justitie.hasPermission("wanted.agent")) {
                 justitie.sendMessage(String.valueOf(stringBuilder));
@@ -171,7 +174,7 @@ public final class WantedPlugin extends JavaPlugin {
             ddgPlayer.getBukkitTaskRemoveWanted().cancel();
         }
         Player player = ddgPlayer.getPlayer();
-        player.sendMessage("Je wantedlevel is " + ddgPlayer.getWantedLevel() + ", niet uitloggen!");
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&',"&8[&bWanted&8] &fJe wantedlevel is &b" + ddgPlayer.getWantedLevel() + "&f, niet uitloggen! Je wantedlevel zal elke minuut verminderen!"));
 
         BukkitTask bukkitTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
             int wantedLevel = ddgPlayer.getWantedLevel();
@@ -180,11 +183,10 @@ public final class WantedPlugin extends JavaPlugin {
             if (wantedLevel <= 0) {
                 getWantedPlayers().remove(ddgPlayer.getUuid());
                 ddgPlayer.getBukkitTaskRemoveWanted().cancel();
-                player.sendMessage("Je bent niet meer wanted, maar pasop, log niet uit als je in een gevaarlijke situatie zit.");
+                player.sendMessage(ChatColor.translateAlternateColorCodes('&',this.getConfig().getString("Message.WantedEnd")));
                 return;
             }
-
-            player.sendMessage("Je wantedlevel is " + wantedLevel + ", niet uitloggen! Je wantedlevel zal elke minuut verminderen.");
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&',"&8[&bWanted&8] &fJe wantedlevel is &b" + ddgPlayer.getWantedLevel() + "&f, niet uitloggen!"));
         }, 20L*60, 20L*60);
         ddgPlayer.setBukkitTaskRemoveWanted(bukkitTask);
     }

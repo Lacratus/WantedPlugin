@@ -28,13 +28,13 @@ public class OnKillListener implements Listener {
                 DDGPlayer player = main.getOnlinePlayers().get(uuid);
 
                 if (main.inCameraRegion(killer)) {
-                    setWantedLevel(player, 20);
+                    setWantedLevel(player, main.getConfig().getInt("ThirdKill"));
                 } else if (player.isMadeKill()) {
-                    setWantedLevel(player, 15);
+                    setWantedLevel(player, main.getConfig().getInt("SecondKill"));
                 } else if (player.isMadeKillInLastDay()) {
-                    setWantedLevel(player, 20);
+                    setWantedLevel(player, main.getConfig().getInt("ThirdKill"));
                 } else {
-                    setWantedLevel(player, 9);
+                    setWantedLevel(player, main.getConfig().getInt("FirstKill"));
                 }
 
                 if (player.getBukkitTaskRemoveKillTimer() != null) {
@@ -49,7 +49,7 @@ public class OnKillListener implements Listener {
 
     public void setWantedLevel(DDGPlayer player,int wantedlevel) {
         player.setWantedLevel(wantedlevel);
-        if (wantedlevel >= 15) {
+        if (wantedlevel >= main.getConfig().getInt("SecondKill")) {
             player.setMadeKill(false);
             player.setMadeKillInLastDay(true);
             main.warn(player);

@@ -4,6 +4,7 @@ import be.lacratus.wantedplugin.WantedPlugin;
 import be.lacratus.wantedplugin.data.StoredDataHandler;
 import be.lacratus.wantedplugin.objects.DDGPlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -37,7 +38,7 @@ public class OnDisconnectListener implements Listener {
             // Melding versturen naar justitie
             for (Player justitie : Bukkit.getOnlinePlayers()) {
                 if (justitie.hasPermission("wanted.leger") || justitie.hasPermission("wanted.agent")) {
-                    justitie.sendMessage("De speler " + player.getDisplayName() + " is uitgelogd. Hij is in de cel geplaatst");
+                    justitie.sendMessage(ChatColor.translateAlternateColorCodes('&',"&8[&bWanted&8] De speler " + player.getDisplayName() + " is uitgelogd. Hij is in de cel geplaatst"));
                 }
             }
             storedDataHandler.saveData(ddgPlayer);
