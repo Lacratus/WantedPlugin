@@ -29,7 +29,6 @@ public class OnDisconnectListener implements Listener {
         DDGPlayer ddgPlayer = main.getOnlinePlayers().get(uuid);
         // Speler jailen bij uitloggen wanneer wanted
         if (main.getWantedPlayers().containsKey(uuid)) {
-            ddgPlayer.setJailed(true);
             ddgPlayer.setWantedLevel(0);
             ddgPlayer.getBukkitTaskRemoveWanted().cancel();
             ddgPlayer.getBukkitTaskRemoveKillTimer().cancel();

@@ -25,11 +25,5 @@ public class OnMoveListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
         DDGPlayer ddgPlayer = main.getOnlinePlayers().get(uuid);
-        if(ddgPlayer.isJailed()){
-            event.setCancelled(true);
-        }
-
-
-
     }
 }

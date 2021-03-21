@@ -6,12 +6,15 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class WantedCommand implements CommandExecutor {
+public class WantedCommand implements CommandExecutor, TabCompleter {
 
     private WantedPlugin main;
     Player target;
@@ -106,7 +109,22 @@ public class WantedCommand implements CommandExecutor {
                     if (main.getWantedPlayers().containsKey(uuid)) {
                         player.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8[&bWanted&8] &fHet wantedlevel van &b"
                                 + args[1] + "&f is &b" + main.getWantedPlayers().get(uuid).getWantedLevel()));
-
+                    } else {
+                        player.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("Message.PlayerNotWanted")));
+                    }
+                } else if (args[0].equalsIgnoreCase("reset")) {
+                    uuid = target.getUniqueId();
+                    if (main.getOnlinePlayers().containsKey(uuid)) {
+                        try {
+                            main.getOnlinePlayers().get(uuid).setWantedLevel(0);
+                            main.getOnlinePlayers().get(uuid).getBukkitTaskRemoveWanted().cancel();
+                            main.getOnlinePlayers().get(uuid).setMadeKill(false);
+                            main.getOnlinePlayers().get(uuid).setMadeKillInLastDay(false);
+                            main.getWantedPlayers() .remove(uuid);
+                        }catch (Exception ignored){
+                        }finally {
+                            player.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("Message.SuccesReset")));
+                        }
                     } else {
                         player.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("Message.PlayerNotWanted")));
                     }
@@ -126,13 +144,13 @@ public class WantedCommand implements CommandExecutor {
             return true;
         }
 
-
+        target = main.getServer().getPlayerExact(args[1]);
         uuid = target.getUniqueId();
         // Zet iemand wanted
         if (args[0].equalsIgnoreCase("set")) {
             try {
                 int wantedLevel = Integer.parseInt(args[2]);
-                if (wantedLevel > thirdKill || wantedLevel < 0) {
+                if (wantedLevel > main.getConfig().getInt("MaxLevel") || wantedLevel < 0) {
                     player.sendMessage(ChatColor.translateAlternateColorCodes('&',main.getConfig().getString("Message.NotNegative")));
                     return false;
                 }
@@ -154,12 +172,37 @@ public class WantedCommand implements CommandExecutor {
         return false;
     }
 
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if(args.length == 1){
+            List<String> commands = new ArrayList<>();
+            commands.add("list");
+            commands.add("get");
+            commands.add("set");
+            commands.add("remove");
+            commands.add("reset");
+            commands.add("event");
+
+            return commands;
+        } else if(args[0].contains("event")){
+            List<String> parameters = new ArrayList<>();
+            parameters.add("Enable");
+            parameters.add("Disable");
+
+            return parameters;
+        }
+        return null;
+    }
+
     public void sendHelpMessage(Player player) {
         player.sendMessage("/Wanted - Sends helpmessage \n" +
                 "/Wanted list - Give every wanted person \n" +
                 "/Wanted remove <Player> - Remove all wantedlevels of player \n" +
+                "/Wanted reset <Player> - Remove all wantedlevels of player and remove 24/48 hour timers. \n" +
                 "/Wanted get <Player> - Get wantedlevel of player\n" +
                 "/Wanted set <Player> <Number> - set wantedlevel of player, maximum of 20!\n" +
                 "/Wanted event <Enable|Disable>");
     }
+
+
 }

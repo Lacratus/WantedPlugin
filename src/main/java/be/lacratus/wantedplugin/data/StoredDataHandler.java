@@ -44,7 +44,7 @@ public class StoredDataHandler {
                 rs.next();
                 // Nieuwe speler wordt aangemaakt in database
                 if (rs.getInt(1) == 0) {
-                    PreparedStatement ps2 = connection.prepareStatement("INSERT INTO ddgplayer(uuid,wantedLevel,timeOfLastKill,madeKill,madeKillInLastDay,isJailed) VALUES(?,DEFAULT,DEFAULT,DEFAULT,DEFAULT,DEFAULT)");
+                    PreparedStatement ps2 = connection.prepareStatement("INSERT INTO ddgplayer(uuid,wantedLevel,timeOfLastKill,madeKill,madeKillInLastDay) VALUES(?,DEFAULT,DEFAULT,DEFAULT,DEFAULT,DEFAULT)");
                     ps2.setString(1, uuid.toString());
                     ps2.executeUpdate();
                     ps2.close();
@@ -64,13 +64,11 @@ public class StoredDataHandler {
                     madeKill = rs2.getInt("MadeKill") != 0;
                     boolean madeKillInLastDay;
                     madeKillInLastDay = rs2.getInt("MadeKillInLastDay") != 0;
-                    boolean isJailed;
-                    isJailed = rs2.getInt("IsJailed") != 0;
                     rs2.close();
                     ps3.close();
                     rs.close();
                     Player player = Bukkit.getPlayer(uuid);
-                    return new DDGPlayer(player, wantedlevel, timeOfLastkill, madeKill, madeKillInLastDay, isJailed);
+                    return new DDGPlayer(player, wantedlevel, timeOfLastkill, madeKill, madeKillInLastDay);
                 }
 
             } catch (SQLException e) {
@@ -96,7 +94,7 @@ public class StoredDataHandler {
 
     // Updaten van spelerdata
     public void updatePlayer(DDGPlayer data, Connection connection) {
-        try (PreparedStatement ps = connection.prepareStatement("UPDATE ddgplayer SET WantedLevel = ?, TimeOfLastKill = ?, MadeKill = ?, MadeKillInLastDay = ?, IsJailed = ? WHERE Uuid= ? ")) {
+        try (PreparedStatement ps = connection.prepareStatement("UPDATE ddgplayer SET WantedLevel = ?, TimeOfLastKill = ?, MadeKill = ?, MadeKillInLastDay = ? WHERE Uuid= ? ")) {
             int madeKill;
             if (data.isMadeKill()) {
                 madeKill = 1;
@@ -110,19 +108,10 @@ public class StoredDataHandler {
             } else {
                 madeKillInLastDay = 0;
             }
-
-            int isJailed;
-            if (data.isJailed()) {
-                isJailed = 1;
-            } else {
-                isJailed = 0;
-            }
             ps.setInt(1, data.getWantedLevel());
             ps.setLong(2, data.getRemoveKillsTimer());
             ps.setInt(3, madeKill);
             ps.setInt(4, madeKillInLastDay);
-            System.out.println(isJailed);
-            ps.setInt(5, isJailed);
             ps.setString(6, data.getUuid().toString());
             ps.executeUpdate();
         } catch (SQLException ex) {

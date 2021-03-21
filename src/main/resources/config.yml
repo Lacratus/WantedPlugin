@@ -1,23 +1,26 @@
-Host: "localhost"
-Port: 3306
-Database: "Market"
-Username: "root"
-Password: ""
+DB:
+  Host: "localhost"
+  Port: 3306
+  Database: "Market"
+  Username: "root"
+  Password: ""
 
 
+Message:
+  NoPermission: "&8[&bWanted&8] &fJe hebt geen permissie tot deze command."
+  EmptyList: "&8[&bWanted&8] &f Er zijn geen spelers die wanted zijn."
+  EventmodusAan: "&8[&bWanted&8] &f De eventmodus is aangezet, het wantedsysteem zal nu niet werken."
+  EventmodusUit: "&8[&bWanted&8] &f De eventmodus is uitgezet, het wantedsysteem zal nu werken."
+  PlayerOffline: "&8[&bWanted&8] &f Deze speler is offline."
+  SuccesRemove: "&8[&bWanted&8] &f De speler is succesvol verwijdert uit de wantedlijst."
+  SuccesReset: "&8[&bWanted&8] &f De speler is succesvol gereset en verwijdert uit de wantedlijst."
+  PlayerNotWanted: "&8[&bWanted&8] &f Deze speler is niet wanted."
+  NotNegative: "&8[&bWanted&8] &f Het getal mag niet negatief zijn of boven de 20."
+  LevelNeedNumber: "&8[&bWanted&8] &f You can't set a player wanted with letters"
+  WantedEnd: "&8[&bWanted&8] &f Je bent niet meer wanted, maar pasop, log niet uit als je in een gevaarlijke situatie zit."
 
-Message.NoPermission: "&8[&bWanted&8] &fJe hebt geen permissie tot deze command."
-Message.EmptyList: "&8[&bWanted&8] &f Er zijn geen spelers die wanted zijn."
-Message.EventmodusAan: "&8[&bWanted&8] &f De eventmodus is aangezet, het wantedsysteem zal nu niet werken."
-Message.EventmodusUit: "&8[&bWanted&8] &f De eventmodus is uitgezet, het wantedsysteem zal nu werken."
-Message.PlayerOffline: "&8[&bWanted&8] &f Deze speler is offline."
-Message.SuccesRemove: "&8[&bWanted&8] &f De speler is succesvol verwijdert uit de wantedlijst."
-Message.PlayerNotWanted: "&8[&bWanted&8] &f Deze speler is niet wanted."
-Message.NotNegative: "&8[&bWanted&8] &f Het getal mag niet negatief zijn of boven de 20."
-Message.LevelNeedNumber: "&8[&bWanted&8] &f You can't set a player wanted with letters"
-Message.WantedEnd: "&8[&bWanted&8] &f Je bent niet meer wanted, maar pasop, log niet uit als je in een gevaarlijke situatie zit."
-
-
-FirstKill: 9
-SecondKill: 15
-ThirdKill: 20
+Wanted:
+  FirstKill: 9
+  SecondKill: 15
+  ThirdKill: 20
+  MaxLevel: 20

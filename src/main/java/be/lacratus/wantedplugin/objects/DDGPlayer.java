@@ -21,7 +21,6 @@ public class DDGPlayer {
     private boolean madeKillInLastDay;
     private BukkitTask bukkitTaskRemoveWanted;
     private BukkitTask bukkitTaskRemoveKillTimer;
-    private boolean isJailed;
 
     public DDGPlayer(Player player) {
         this.player = player;
@@ -31,9 +30,8 @@ public class DDGPlayer {
         this.removeKillsTimer = 0L;
         this.madeKill = false;
         this.madeKillInLastDay = false;
-        this.isJailed = false;
     }
-    public DDGPlayer(Player player, int wantedLevel, Long removeKillsTimer, boolean madeKill, boolean madeKillInLastDay, boolean isJailed) {
+    public DDGPlayer(Player player, int wantedLevel, Long removeKillsTimer, boolean madeKill, boolean madeKillInLastDay) {
         this.player = player;
         this.uuid = player.getUniqueId();
         this.wantedLevel = wantedLevel;
@@ -41,6 +39,5 @@ public class DDGPlayer {
         this.removeKillsTimer = removeKillsTimer + System.currentTimeMillis() / 1000;
         this.madeKill = madeKill;
         this.madeKillInLastDay = madeKillInLastDay;
-        this.isJailed = isJailed;
     }
 }

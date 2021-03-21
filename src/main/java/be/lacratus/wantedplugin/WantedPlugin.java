@@ -1,6 +1,5 @@
 package be.lacratus.wantedplugin;
 
-import be.lacratus.wantedplugin.commands.ModCommand;
 import be.lacratus.wantedplugin.commands.WantedCommand;
 import be.lacratus.wantedplugin.data.StoredDataHandler;
 import be.lacratus.wantedplugin.listeners.OnDisconnectListener;
@@ -11,10 +10,8 @@ import be.lacratus.wantedplugin.objects.DDGPlayer;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.bukkit.BukkitPlayer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
@@ -94,11 +91,11 @@ public final class WantedPlugin extends JavaPlugin {
         //Config - Databank creation
         this.getConfig().options().copyDefaults();
         saveDefaultConfig();
-        this.host = this.getConfig().getString("Host");
-        this.port = this.getConfig().getInt("Port");
-        this.database = this.getConfig().getString("Database");
-        this.username = this.getConfig().getString("Username");
-        this.password = this.getConfig().getString("Password");
+        this.host = this.getConfig().getString("DB.Host");
+        this.port = this.getConfig().getInt("DB.Port");
+        this.database = this.getConfig().getString("DB.Database");
+        this.username = this.getConfig().getString("DB.Username");
+        this.password = this.getConfig().getString("DB.Password");
         // Hikari configuration
         hikari = new HikariDataSource();
         hikari.setMaximumPoolSize(10);
@@ -120,7 +117,6 @@ public final class WantedPlugin extends JavaPlugin {
 
         //Commands
         getCommand("Wanted").setExecutor(new WantedCommand(this));
-        getCommand("Mod").setExecutor(new ModCommand(this));
 
         //Listeners
         Bukkit.getPluginManager().registerEvents(new OnJoinListener(this), this);
@@ -136,8 +132,9 @@ public final class WantedPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        // Verwijder alle Wanted personen
+        removeAllWanteds();
         storedDataHandler.savePlayerData().run();
-
         // Sluit hikari
         hikari.close();
     }
@@ -248,5 +245,13 @@ public final class WantedPlugin extends JavaPlugin {
             }
         }
         return false;
+    }
+
+    public void removeAllWanteds(){
+        for(Map.Entry<UUID,DDGPlayer> entry: wantedPlayers.entrySet()){
+            DDGPlayer player = entry.getValue();
+            player.setWantedLevel(0);
+            wantedPlayers.remove(player.getUuid());
+        }
     }
 }
