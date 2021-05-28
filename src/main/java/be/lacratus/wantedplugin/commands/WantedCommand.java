@@ -53,7 +53,10 @@ public class WantedCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             // Geef lijst van alle wanted personen
             if (args[0].equalsIgnoreCase("list")) {
-
+                if(!player.hasPermission("wanted.list")){
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&',main.getConfig().getString("Message.NoPermission")));
+                    return false;
+                }
                 if(main.getWantedPlayers().entrySet().isEmpty()){
                     player.sendMessage(ChatColor.translateAlternateColorCodes('&',main.getConfig().getString("Message.EmptyList")));
                     return true;
@@ -78,6 +81,10 @@ public class WantedCommand implements CommandExecutor, TabCompleter {
         if (args.length == 2) {
             // Event modus aan/uit zetten, dit zorgt ervoor dat als iemand vermoord wordt deze niet wanted wordt gezet
             if (args[0].equalsIgnoreCase("event")) {
+                if(!player.hasPermission("wanted.event")){
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&',main.getConfig().getString("Message.NoPermission")));
+                    return false;
+                }
                 if (args[1].equalsIgnoreCase("true") || args[1].equalsIgnoreCase("on") || args[1].equalsIgnoreCase("enable")) {
                     main.setEventMode(true);
                     player.sendMessage(ChatColor.translateAlternateColorCodes('&',main.getConfig().getString("Message.EventmodusAan")));
@@ -94,6 +101,10 @@ public class WantedCommand implements CommandExecutor, TabCompleter {
             // Verwijder Wantedlevels van een speler
             try {
                 if (args[0].equalsIgnoreCase("remove")) {
+                    if(!player.hasPermission("wanted.remove")){
+                        player.sendMessage(ChatColor.translateAlternateColorCodes('&',main.getConfig().getString("Message.NoPermission")));
+                        return false;
+                    }
                     uuid = target.getUniqueId();
                     if (main.getWantedPlayers().containsKey(uuid)) {
                         main.getWantedPlayers().get(uuid).setWantedLevel(0);
@@ -105,6 +116,10 @@ public class WantedCommand implements CommandExecutor, TabCompleter {
                     }
                     // Geef terug of speler wanted is en hoelang
                 } else if (args[0].equalsIgnoreCase("get")) {
+                    if(!player.hasPermission("wanted.get")){
+                        player.sendMessage(ChatColor.translateAlternateColorCodes('&',main.getConfig().getString("Message.NoPermission")));
+                        return false;
+                    }
                     uuid = target.getUniqueId();
                     if (main.getWantedPlayers().containsKey(uuid)) {
                         player.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8[&bWanted&8] &fHet wantedlevel van &b"
@@ -113,6 +128,10 @@ public class WantedCommand implements CommandExecutor, TabCompleter {
                         player.sendMessage(ChatColor.translateAlternateColorCodes('&', main.getConfig().getString("Message.PlayerNotWanted")));
                     }
                 } else if (args[0].equalsIgnoreCase("reset")) {
+                    if(!player.hasPermission("wanted.reset")){
+                        player.sendMessage(ChatColor.translateAlternateColorCodes('&',main.getConfig().getString("Message.NoPermission")));
+                        return false;
+                    }
                     uuid = target.getUniqueId();
                     if (main.getOnlinePlayers().containsKey(uuid)) {
                         try {
@@ -148,6 +167,10 @@ public class WantedCommand implements CommandExecutor, TabCompleter {
         uuid = target.getUniqueId();
         // Zet iemand wanted
         if (args[0].equalsIgnoreCase("set")) {
+            if(!player.hasPermission("wanted.set")){
+                player.sendMessage(ChatColor.translateAlternateColorCodes('&',main.getConfig().getString("Message.NoPermission")));
+                return false;
+            }
             try {
                 int wantedLevel = Integer.parseInt(args[2]);
                 if (wantedLevel > main.getConfig().getInt("MaxLevel") || wantedLevel < 0) {
