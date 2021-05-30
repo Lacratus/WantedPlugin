@@ -39,11 +39,7 @@ public class WantedCommand implements CommandExecutor, TabCompleter {
         }
         Player player = (Player) sender;
 
-        // Permissions vallen in te stellen, dit is een placeholder
-        if (!player.hasPermission("Korpschef") || !player.hasPermission("Generaal")) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&',main.getConfig().getString("Message.NoPermission")));
-            return false;
-        }
+
         // Als aantal argumenten 0 of meer dan 3 is, return.
         if (args.length == 0 || args.length > 3) {
             sendHelpMessage(player);
