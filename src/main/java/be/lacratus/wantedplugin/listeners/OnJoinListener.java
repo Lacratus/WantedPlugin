@@ -3,6 +3,7 @@ package be.lacratus.wantedplugin.listeners;
 import be.lacratus.wantedplugin.WantedPlugin;
 import be.lacratus.wantedplugin.data.StoredDataHandler;
 import be.lacratus.wantedplugin.objects.DDGPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,7 +15,7 @@ import java.util.UUID;
 
 public class OnJoinListener implements Listener {
 
-    WantedPlugin main;
+    private WantedPlugin main;
     private StoredDataHandler storedDataHandler;
 
     public OnJoinListener(WantedPlugin wantedPlugin) {
@@ -26,14 +27,15 @@ public class OnJoinListener implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
-        storedDataHandler.loadData(uuid).thenAccept(ddgPlayer -> {
+        storedDataHandler.loadData(uuid).whenComplete((ddgPlayer, ex) -> {
+            if (ex != null) {
+                ex.printStackTrace();
+                return;
+            }
             main.getOnlinePlayers().put(uuid, ddgPlayer);
-            if(ddgPlayer.isMadeKillInLastDay() || ddgPlayer.isMadeKill()) {
+            if (ddgPlayer.isMadeKillInLastDay() || ddgPlayer.isMadeKill()) {
                 main.runRemoveKills(ddgPlayer);
             }
-        }).exceptionally(throwable -> {
-            throwable.printStackTrace();
-            return null;
         });
 
     }

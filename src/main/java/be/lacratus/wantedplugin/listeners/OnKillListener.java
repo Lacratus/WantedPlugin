@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public class OnKillListener implements Listener {
 
-    WantedPlugin main;
+    private WantedPlugin main;
 
     public OnKillListener(WantedPlugin wantedPlugin) {
         this.main = wantedPlugin;
@@ -28,13 +28,13 @@ public class OnKillListener implements Listener {
                 DDGPlayer player = main.getOnlinePlayers().get(uuid);
 
                 if (main.inCameraRegion(killer)) {
-                    setWantedLevel(player, main.getConfig().getInt("ThirdKill"));
+                    setWantedLevel(player, main.getConfig().getInt("Wanted.ThirdKill"));
                 } else if (player.isMadeKill()) {
-                    setWantedLevel(player, main.getConfig().getInt("SecondKill"));
+                    setWantedLevel(player, main.getConfig().getInt("Wanted.SecondKill"));
                 } else if (player.isMadeKillInLastDay()) {
-                    setWantedLevel(player, main.getConfig().getInt("ThirdKill"));
+                    setWantedLevel(player, main.getConfig().getInt("Wanted.ThirdKill"));
                 } else {
-                    setWantedLevel(player, main.getConfig().getInt("FirstKill"));
+                    setWantedLevel(player, main.getConfig().getInt("Wanted.FirstKill"));
                 }
 
                 if (player.getBukkitTaskRemoveKillTimer() != null) {
@@ -49,7 +49,7 @@ public class OnKillListener implements Listener {
 
     public void setWantedLevel(DDGPlayer player,int wantedlevel) {
         player.setWantedLevel(wantedlevel);
-        if (wantedlevel >= main.getConfig().getInt("SecondKill")) {
+        if (wantedlevel >= main.getConfig().getInt("Wanted.SecondKill")) {
             player.setMadeKill(false);
             player.setMadeKillInLastDay(true);
             main.warn(player);

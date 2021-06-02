@@ -1,7 +1,7 @@
 DB:
   Host: "localhost"
   Port: 3306
-  Database: "Market"
+  Database: "wanted"
   Username: "root"
   Password: ""
 
@@ -16,7 +16,7 @@ Message:
   SuccesReset: "&8[&bWanted&8] &f De speler is succesvol gereset en verwijdert uit de wantedlijst."
   PlayerNotWanted: "&8[&bWanted&8] &f Deze speler is niet wanted."
   NotNegative: "&8[&bWanted&8] &f Het getal mag niet negatief zijn of boven de 20."
-  LevelNeedNumber: "&8[&bWanted&8] &f You can't set a player wanted with letters"
+  LevelNeedNumbers: "&8[&bWanted&8] &f You can't set a player wantd with letters."
   WantedEnd: "&8[&bWanted&8] &f Je bent niet meer wanted, maar pasop, log niet uit als je in een gevaarlijke situatie zit."
 
 Wanted:

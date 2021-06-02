@@ -1,11 +1,11 @@
 package be.lacratus.wantedplugin;
 
+import be.lacratus.wantedplugin.commands.CommandManager;
 import be.lacratus.wantedplugin.commands.WantedCommand;
 import be.lacratus.wantedplugin.data.StoredDataHandler;
 import be.lacratus.wantedplugin.listeners.OnDisconnectListener;
 import be.lacratus.wantedplugin.listeners.OnJoinListener;
 import be.lacratus.wantedplugin.listeners.OnKillListener;
-import be.lacratus.wantedplugin.listeners.OnMoveListener;
 import be.lacratus.wantedplugin.objects.DDGPlayer;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.WorldEdit;
@@ -31,6 +31,8 @@ import org.bukkit.scheduler.BukkitTask;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 @Getter
 @Setter
@@ -39,12 +41,6 @@ public final class WantedPlugin extends JavaPlugin {
 
     // Database
     private HikariDataSource hikari;
-    private static Connection connection;
-    private String host;
-    private String database;
-    private String username;
-    private String password;
-    private int port;
 
     // API's
     private WorldGuardPlugin worldGuardPlugin;
@@ -64,7 +60,7 @@ public final class WantedPlugin extends JavaPlugin {
     @Override
     public void onLoad() {
         // ... do your own plugin things, etc
-        System.out.println("Plugin loading");
+        Bukkit.getLogger().info("Plugin loading");
         FlagRegistry registry = getWorldGuard().getFlagRegistry();
         try {
             // create a flag with the name "my-custom-flag", defaulting to true
@@ -80,49 +76,57 @@ public final class WantedPlugin extends JavaPlugin {
             } else {
                 // types don't match - this is bad news! some other plugin conflicts with you
                 // hopefully this never actually happens
-                System.out.println("Some shit went really wrong");
+                Bukkit.getLogger().warning("Camera-flag not added");
             }
         }
     }
 
     @Override
     public void onEnable() {
-        System.out.println("Plugin Enabled");
+        Bukkit.getLogger().info("Plugin Enabled");
         //Config - Databank creation
         this.getConfig().options().copyDefaults();
         saveDefaultConfig();
-        this.host = this.getConfig().getString("DB.Host");
-        this.port = this.getConfig().getInt("DB.Port");
-        this.database = this.getConfig().getString("DB.Database");
-        this.username = this.getConfig().getString("DB.Username");
-        this.password = this.getConfig().getString("DB.Password");
+        String host = this.getConfig().getString("DB.Host");
+        int port = this.getConfig().getInt("DB.Port");
+        String database = this.getConfig().getString("DB.Database");
+        String username = this.getConfig().getString("DB.Username");
+        String password = this.getConfig().getString("DB.Password");
         // Hikari configuration
         hikari = new HikariDataSource();
         hikari.setMaximumPoolSize(10);
-        hikari.setJdbcUrl("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database);
-        hikari.setUsername(this.username);
-        hikari.setPassword(this.password);
+        hikari.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database);
+        hikari.setUsername(username);
+        hikari.setPassword(password);
         hikari.addDataSourceProperty("cachePrepStmts", "true");
         hikari.addDataSourceProperty("prepStmtCacheSize", "250");
         hikari.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+
+        try {
+            Connection connection = openConnection();
+            connection.close();
+        } catch (NullPointerException | SQLException ex) {
+            Bukkit.getLogger().warning("Database Disconnected!");
+        }
+
 
         // Initialise api's
         worldGuardPlugin = getWorldGuard();
         worldEditPlugin = getWorldEdit();
 
         this.storedDataHandler = new StoredDataHandler(this);
-        this.wantedPlayers = new HashMap<>();
-        this.onlinePlayers = new HashMap<>();
+        this.wantedPlayers = new ConcurrentHashMap<>();
+        this.onlinePlayers = new ConcurrentHashMap<>();
         this.eventMode = false;
 
         //Commands
-        getCommand("Wanted").setExecutor(new WantedCommand(this));
+        //getCommand("Wanted").setExecutor(new WantedCommand(this));
+        getCommand("Wanted").setExecutor(new CommandManager(this));
 
         //Listeners
         Bukkit.getPluginManager().registerEvents(new OnJoinListener(this), this);
         Bukkit.getPluginManager().registerEvents(new OnDisconnectListener(this), this);
         Bukkit.getPluginManager().registerEvents(new OnKillListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new OnMoveListener(this), this);
 
         //Save Playerinfo to databank every ... minutes
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, storedDataHandler.savePlayerData(), 20L * 1800, 20L * 1800);
@@ -141,11 +145,12 @@ public final class WantedPlugin extends JavaPlugin {
 
     public Connection openConnection() {
         try {
-            connection = hikari.getConnection();
+            return hikari.getConnection();
         } catch (SQLException ex) {
+            Bukkit.setWhitelist(true);
             ex.printStackTrace();
+            return null;
         }
-        return connection;
     }
 
     public void warn(DDGPlayer ddgPlayer) {
@@ -154,13 +159,13 @@ public final class WantedPlugin extends JavaPlugin {
         int z = (int) ddgPlayer.getPlayer().getLocation().getZ();
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append(ChatColor.translateAlternateColorCodes('&',"&8[&bWanted&8] &4WAARSCHUWING!&f\n"))
+        stringBuilder.append(ChatColor.translateAlternateColorCodes('&', "&8[&bWanted&8] &4WAARSCHUWING!&f\n"))
                 .append("WANTED: ").append(ddgPlayer.getPlayer().getDisplayName()).append("\n").append("X: ").append(x)
                 .append(" Y: ").append(y).append(" Z: ").append(z);
         for (Player justitie : Bukkit.getOnlinePlayers()) {
-            if(ddgPlayer.getWantedLevel() == this.getConfig().getInt("ThirdKill") && (justitie.hasPermission("wanted.leger") || justitie.hasPermission("wanted.agent"))) {
+            if (ddgPlayer.getWantedLevel() == this.getConfig().getInt("Wanted.ThirdKill") && (justitie.hasPermission("wanted.warnArmy") || justitie.hasPermission("wanted.warnCops"))) {
                 justitie.sendMessage(String.valueOf(stringBuilder));
-            } else if (justitie.hasPermission("wanted.agent")) {
+            } else if (justitie.hasPermission("wanted.warnCops")) {
                 justitie.sendMessage(String.valueOf(stringBuilder));
             }
         }
@@ -171,7 +176,7 @@ public final class WantedPlugin extends JavaPlugin {
             ddgPlayer.getBukkitTaskRemoveWanted().cancel();
         }
         Player player = ddgPlayer.getPlayer();
-        player.sendMessage(ChatColor.translateAlternateColorCodes('&',"&8[&bWanted&8] &fJe wantedlevel is &b" + ddgPlayer.getWantedLevel() + "&f, niet uitloggen! Je wantedlevel zal elke minuut verminderen!"));
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8[&bWanted&8] &fJe wantedlevel is &b" + ddgPlayer.getWantedLevel() + "&f, niet uitloggen! Je wantedlevel zal elke minuut verminderen!"));
 
         BukkitTask bukkitTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
             int wantedLevel = ddgPlayer.getWantedLevel();
@@ -180,11 +185,11 @@ public final class WantedPlugin extends JavaPlugin {
             if (wantedLevel <= 0) {
                 getWantedPlayers().remove(ddgPlayer.getUuid());
                 ddgPlayer.getBukkitTaskRemoveWanted().cancel();
-                player.sendMessage(ChatColor.translateAlternateColorCodes('&',this.getConfig().getString("Message.WantedEnd")));
+                player.sendMessage(ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("Message.WantedEnd")));
                 return;
             }
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&',"&8[&bWanted&8] &fJe wantedlevel is &b" + ddgPlayer.getWantedLevel() + "&f, niet uitloggen!"));
-        }, 20L*60, 20L*60);
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8[&bWanted&8] &fJe wantedlevel is &b" + ddgPlayer.getWantedLevel() + "&f, niet uitloggen!"));
+        }, 20L * 60, 20L * 60);
         ddgPlayer.setBukkitTaskRemoveWanted(bukkitTask);
     }
 
@@ -247,8 +252,8 @@ public final class WantedPlugin extends JavaPlugin {
         return false;
     }
 
-    public void removeAllWanteds(){
-        for(Map.Entry<UUID,DDGPlayer> entry: wantedPlayers.entrySet()){
+    public void removeAllWanteds() {
+        for (Map.Entry<UUID, DDGPlayer> entry : wantedPlayers.entrySet()) {
             DDGPlayer player = entry.getValue();
             player.setWantedLevel(0);
             wantedPlayers.remove(player.getUuid());

@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class OnDisconnectListener implements Listener {
 
-    WantedPlugin main;
+    private WantedPlugin main;
     private StoredDataHandler storedDataHandler;
 
     public OnDisconnectListener(WantedPlugin wantedPlugin) {
@@ -36,11 +36,11 @@ public class OnDisconnectListener implements Listener {
             main.updateLists(ddgPlayer);
             // Melding versturen naar justitie
             for (Player justitie : Bukkit.getOnlinePlayers()) {
-                if (justitie.hasPermission("wanted.leger") || justitie.hasPermission("wanted.agent")) {
+                if (justitie.hasPermission("wanted.warnArmy") || justitie.hasPermission("wanted.warnCops")) {
                     justitie.sendMessage(ChatColor.translateAlternateColorCodes('&',"&8[&bWanted&8] De speler " + player.getDisplayName() + " is uitgelogd. Hij is in de cel geplaatst"));
                 }
             }
-            storedDataHandler.saveData(ddgPlayer);
+            Bukkit.getScheduler().runTaskAsynchronously(main, storedDataHandler.saveData(ddgPlayer));
         }
     }
 }

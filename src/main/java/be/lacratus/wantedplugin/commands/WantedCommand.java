@@ -17,17 +17,11 @@ import java.util.UUID;
 public class WantedCommand implements CommandExecutor, TabCompleter {
 
     private WantedPlugin main;
-    Player target;
-    UUID uuid;
-    int firstKill;
-    int secondKill;
-    int thirdKill;
+    private int secondKill;
 
     public WantedCommand(WantedPlugin wantedPlugin) {
         this.main = wantedPlugin;
-        firstKill = main.getConfig().getInt("FirstKill");
         secondKill = main.getConfig().getInt("SecondKill");
-        thirdKill = main.getConfig().getInt("ThirdKill");
     }
 
     @Override
@@ -74,6 +68,8 @@ public class WantedCommand implements CommandExecutor, TabCompleter {
         }
 
 
+        UUID uuid;
+        Player target;
         if (args.length == 2) {
             // Event modus aan/uit zetten, dit zorgt ervoor dat als iemand vermoord wordt deze niet wanted wordt gezet
             if (args[0].equalsIgnoreCase("event")) {

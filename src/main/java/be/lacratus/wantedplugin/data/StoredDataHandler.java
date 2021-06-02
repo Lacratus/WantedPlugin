@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class StoredDataHandler {
 
@@ -22,15 +23,15 @@ public class StoredDataHandler {
         this.main = main;
     }
 
-    public void saveData(DDGPlayer data) {
+    public Runnable saveData(DDGPlayer data) {
         // Data gets updated to database
-        Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+        return () -> {
             try (Connection connection = main.openConnection()) {
                 updatePlayer(data, connection);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
-        });
+        };
     }
 
 
@@ -38,13 +39,12 @@ public class StoredDataHandler {
         return CompletableFuture.supplyAsync(() -> {
             // First login makes row in table
             try (Connection connection = main.openConnection();
-                 PreparedStatement ps = connection.prepareStatement("SELECT COUNT(uuid) FROM ddgplayer WHERE uuid = ?")) {
+                 PreparedStatement ps = connection.prepareStatement("SELECT * FROM ddgplayer WHERE uuid = ?")) {
                 ps.setString(1, uuid.toString());
                 ResultSet rs = ps.executeQuery();
-                rs.next();
                 // Nieuwe speler wordt aangemaakt in database
-                if (rs.getInt(1) == 0) {
-                    PreparedStatement ps2 = connection.prepareStatement("INSERT INTO ddgplayer(uuid,wantedLevel,timeOfLastKill,madeKill,madeKillInLastDay) VALUES(?,DEFAULT,DEFAULT,DEFAULT,DEFAULT,DEFAULT)");
+                if (!rs.next()) {
+                    PreparedStatement ps2 = connection.prepareStatement("INSERT INTO ddgplayer(uuid,wantedLevel,timeOfLastKill,madeKill,madeKillInLastDay) VALUES(?,DEFAULT,DEFAULT,DEFAULT,DEFAULT)");
                     ps2.setString(1, uuid.toString());
                     ps2.executeUpdate();
                     ps2.close();
@@ -54,26 +54,18 @@ public class StoredDataHandler {
 
                     // Speler bestaat al in database
                 } else {
-                    PreparedStatement ps3 = connection.prepareStatement("SELECT * FROM ddgplayer WHERE uuid = ?");
-                    ps3.setString(1, uuid.toString());
-                    ResultSet rs2 = ps3.executeQuery();
-                    rs2.next();
-                    int wantedlevel = rs2.getInt("wantedLevel");
-                    long timeOfLastkill = rs2.getInt("timeOfLastKill") - System.currentTimeMillis() / 1000;
+                    int wantedlevel = rs.getInt("wantedLevel");
+                    long timeOfLastkill = rs.getInt("timeOfLastKill") - System.currentTimeMillis() / 1000;
                     boolean madeKill;
-                    madeKill = rs2.getInt("MadeKill") != 0;
+                    madeKill = rs.getInt("MadeKill") != 0;
                     boolean madeKillInLastDay;
-                    madeKillInLastDay = rs2.getInt("MadeKillInLastDay") != 0;
-                    rs2.close();
-                    ps3.close();
+                    madeKillInLastDay = rs.getInt("MadeKillInLastDay") != 0;
                     rs.close();
                     Player player = Bukkit.getPlayer(uuid);
                     return new DDGPlayer(player, wantedlevel, timeOfLastkill, madeKill, madeKillInLastDay);
                 }
-
             } catch (SQLException e) {
-                e.printStackTrace();
-                return null;
+                throw new CompletionException(e);
             }
         });
     }
